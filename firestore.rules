@@ -1,0 +1,154 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Default Deny Everything
+    match /{document=**} { allow read, write: if false; }
+
+    // --- Global Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    function getUserProfile(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
+    }
+    
+    function isRole(role) {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
+    function isAdmin() { 
+      return isRole('admin') || 
+             (isSignedIn() && 'email' in request.auth.token && (
+               request.auth.token.email == 'majdaldinalmalahi@gmail.com' ||
+               request.auth.token.email == '773@system.com'
+             )); 
+    }
+    function isGM() { return isRole('general_manager'); }
+    function isSupervisor() { return isRole('supervisor'); }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    // --- Validation Helpers ---
+    function isValidUser(data) {
+      return data.name is string && data.name.size() <= 100 &&
+             data.role in ['admin', 'supervisor', 'general_manager', 'employee', 'system_user'];
+    }
+
+    function isValidTask(data) {
+      return data.title is string && data.title.size() <= 200 &&
+             data.status in ['pending', 'completed_by_employee', 'endorsed_by_supervisor', 'fully_approved'] &&
+             data.assigneeId is string &&
+             (data.get('reminded1Day', false) is bool) &&
+             (data.get('reminded3Days', false) is bool) &&
+             (data.get('remindedToday', false) is bool);
+    }
+
+    function isValidNotification(data) {
+      return data.title is string && data.title.size() <= 200 &&
+             data.message is string && data.message.size() <= 1000 &&
+             data.userId is string && data.type in ['info', 'success', 'warning', 'error'] &&
+             (data.get('action', '') is string);
+    }
+
+    function isValidLeaveRequest(data) {
+      return data.employeeId is string && data.type is string &&
+             data.startDate is string && data.endDate is string &&
+             data.status in ['pending', 'approved', 'rejected'];
+    }
+
+    // --- Collection Rules ---
+
+    // 1. Users
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      // Allow list for admin/gm, OR if the user is checking for system initialization (leaky but practical for first run)
+      allow list: if isAdmin() || isGM() || isSignedIn(); 
+      allow create: if isSignedIn() && isValidId(userId) && (
+        (userId == request.auth.uid && isValidUser(incoming())) ||
+        isAdmin()
+      );
+      allow update: if isAdmin() || (isOwner(userId) && incoming().role == existing().role && isValidUser(incoming()));
+      allow delete: if isAdmin();
+    }
+
+    // 2. Employees (HR Core)
+    match /employees/{id} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdmin() && isValidId(id);
+      allow delete: if isAdmin();
+    }
+
+    // 3. Branches & Org Structure
+    match /branches/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /settings/{id} { 
+      allow read: if true; 
+      allow write: if isAdmin() || 
+                    (id == 'deadlineReminders' && isSupervisor()) ||
+                    (id == 'system' && !exists(/databases/$(database)/documents/settings/system));
+    }
+    match /companyInfo/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /organizationalUnits/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /positions/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /positionAssignments/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+ 
+    // 4. Tasks (Collaborative Workflow)
+    match /tasks/{taskId} {
+      allow read: if isSignedIn();
+      allow create: if (isAdmin() || isSupervisor() || isGM()) && isValidTask(incoming());
+      allow update: if isValidId(taskId) && (
+                    isAdmin() || 
+                    (isSupervisor() && incoming().diff(existing()).affectedKeys().hasAny(['status', 'supervisorAttachmentData', 'supervisorComments', 'ccTo', 'updatedAt', 'reminded1Day', 'reminded3Days', 'remindedToday'])) ||
+                    (isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+                     existing().assigneeId == getUserProfile(request.auth.uid).employeeId && 
+                     incoming().diff(existing()).affectedKeys().hasOnly(['status', 'attachmentData', 'attachmentName', 'updatedAt', 'completedAt', 'employeeNotes']))
+                  );
+      allow delete: if isAdmin();
+    }
+
+    // 5. Attendance
+    match /attendance/{id} {
+      allow get: if isAdmin() || isGM() || (isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+                                              existing().get('employeeId', '') == getUserProfile(request.auth.uid).get('employeeId', ''));
+      allow list: if isAdmin() || isGM() || (isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+                                               resource.data.employeeId == getUserProfile(request.auth.uid).employeeId);
+      allow create: if isAdmin() || (isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+                                      incoming().get('employeeId', '') == getUserProfile(request.auth.uid).get('employeeId', ''));
+      allow update, delete: if isAdmin();
+    }
+
+    // 6. Evaluations, Penalties, Financial
+    match /evaluations/{id} { allow get, list: if isSignedIn(); allow write: if isAdmin() || isGM(); }
+    match /penalties/{id} { allow get, list: if isSignedIn(); allow write: if isAdmin(); }
+    match /accruals/{id} { 
+      allow get: if isAdmin() || isGM() || (isSignedIn() && existing().employeeId == getUserProfile(request.auth.uid).employeeId);
+      allow list: if isAdmin() || isGM() || (isSignedIn() && resource.data.employeeId == getUserProfile(request.auth.uid).employeeId);
+      allow write: if isAdmin(); 
+    }
+
+    match /notifications/{id} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidNotification(incoming()); // Allow system/admin to create
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && 
+                    incoming().diff(existing()).affectedKeys().hasOnly(['read']);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+    
+    // 7. System Logs
+    match /logs/{id} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+    }
+
+    // 8. Leave Requests
+    match /leave_requests/{id} {
+      allow read: if isAdmin() || isRole('supervisor') || isRole('general_manager') || 
+                  (isSignedIn() && resource.data.employeeId == getUserProfile(request.auth.uid).employeeId);
+      allow create: if isSignedIn() && isValidLeaveRequest(incoming());
+      allow update: if (isAdmin() || isRole('supervisor') || isRole('general_manager')) && 
+                    incoming().diff(existing()).affectedKeys().hasAny(['status', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+  }
+}

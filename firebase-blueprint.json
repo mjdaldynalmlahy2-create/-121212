@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "Notification": {
+      "title": "Notification",
+      "description": "System or user sent notification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["info", "success", "warning", "error"] },
+        "action": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "message", "type", "read", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User account details and role-based permissions.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "supervisor", "general_manager", "employee", "system_user"] },
+        "permissions": {
+          "type": "object",
+          "properties": {
+            "canAdd": { "type": "boolean" },
+            "canEdit": { "type": "boolean" },
+            "canDelete": { "type": "boolean" },
+            "canView": { "type": "boolean" },
+            "allowedModules": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "employeeId": { "type": "string" },
+        "mustChangePassword": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "email", "role"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "A task assigned to an employee with a multi-stage approval workflow.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "notes": { "type": "string" },
+        "assigneeId": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "status": { "type": "string", "enum": ["pending", "completed_by_employee", "endorsed_by_supervisor", "fully_approved"] },
+        "attachmentData": { "type": "string" },
+        "attachmentName": { "type": "string" },
+        "supervisorAttachmentData": { "type": "string" },
+        "supervisorAttachmentName": { "type": "string" },
+        "ccTo": { "type": "array", "items": { "type": "string" } },
+        "reminded1Day": { "type": "boolean" },
+        "reminded3Days": { "type": "boolean" },
+        "remindedToday": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "assigneeId", "status"]
+    },
+    "Log": {
+      "title": "Operation Log",
+      "description": "System-wide activity logging for audit trails.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["action", "userId", "timestamp"]
+    },
+    "LeaveRequest": {
+      "title": "Leave Request",
+      "description": "Employee request for time off (annual, sick, etc.)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "type": { "type": "string" },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "duration": { "type": "number" },
+        "notes": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["employeeId", "type", "startDate", "endDate", "status"]
+    }
+  },
+  "firestore": {
+    "users": { "schema": "UserProfile", "description": "System users and their roles" },
+    "tasks": { "schema": "Task", "description": "Tasks and achievement tickets" },
+    "employees": { "schema": "object", "description": "Employee database" },
+    "branches": { "schema": "object", "description": "Organization branches" },
+    "organizationalUnits": { "schema": "object", "description": "Departments" },
+    "positions": { "schema": "object", "description": "Job positions" },
+    "positionAssignments": { "schema": "object", "description": "Employee job assignments" },
+    "attendance": { "schema": "object", "description": "Attendance records" },
+    "evaluations": { "schema": "object", "description": "Performance evaluations" },
+    "penalties": { "schema": "object", "description": "Disciplinary actions" },
+    "accruals": { "schema": "object", "description": "Payroll records" },
+    "notifications": { "schema": "Notification", "description": "User notifications" },
+    "settings": { "schema": "object", "description": "System settings" },
+    "logs": { "schema": "Log", "description": "Audit trail logs" },
+    "leave_requests": { "schema": "LeaveRequest", "description": "Employee leave requests" }
+  }
+}

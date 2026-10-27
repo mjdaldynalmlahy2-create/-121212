@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remix نظام إدارة الموارد البشرية والتقييم المتكامل</title>
+    <meta name="description" content="نظام متكامل لإدارة الموظفين والرواتب والتقييمات والهيكل التنظيمي">
+    <meta property="og:title" content="Remix نظام إدارة الموارد البشرية والتقييم المتكامل">
+    <meta property="og:description" content="نظام متكامل لإدارة الموظفين والرواتب والتقييمات والهيكل التنظيمي">
+    <!-- CSS and Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/src/index.css">
+</head>
+<body class="bg-slate-50">
+    <!-- Login Screen -->
+    <div id="login-screen" class="fixed inset-0 bg-indigo-950 z-[200] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md transform transition-all animate-fade-in text-center border border-indigo-100">
+            <div class="w-20 h-20 bg-indigo-50 border-2 border-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-indigo-600 text-3xl shadow-sm">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h1 class="text-2xl font-black text-slate-800 mb-1">تسجيل الدخول</h1>
+            <p class="text-slate-500 mb-6 text-xs font-medium">نظام الموارد البشرية وإدارة الأداء المتكامل</p>
+
+            <!-- Primary 1-Click Official Login: Google Authentication -->
+            <div class="mb-5 bg-gradient-to-b from-indigo-50/80 to-white border border-indigo-100 rounded-2xl p-4 text-center shadow-sm">
+                <button type="button" id="google-login-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 px-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-200 hover:shadow-indigo-300 flex items-center justify-center gap-3 cursor-pointer">
+                    <span class="w-6 h-6 bg-white rounded-full flex items-center justify-center p-1 shadow-sm">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4">
+                    </span>
+                    <span>الدخول الفوري عبر حساب جوجل</span>
+                </button>
+                <div class="mt-2.5 flex items-center justify-center gap-1.5 text-[11px] text-emerald-700 font-bold">
+                    <i class="fas fa-check-circle text-emerald-600"></i>
+                    <span>طريقة الدخول المعتمدة والمفعّلة تلقائياً (صلاحيات المدير الكاملة)</span>
+                </div>
+            </div>
+
+            <div class="relative py-2 mb-4">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+                <div class="relative flex justify-center text-xs"><span class="bg-white px-3 text-slate-400 font-semibold">أو بالرقم الوظيفي / اسم المستخدم</span></div>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div class="text-right text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 hidden" id="bootstrap-container">
+                    <p class="text-indigo-700 font-bold mb-1"><i class="fas fa-magic ml-1"></i> تهيئة النظام</p>
+                    <p class="text-slate-500">حساب مدير النظام الافتراضي (773) بكلمة سر (123456).</p>
+                </div>
+                <div class="text-right">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">اسم المستخدم / الرقم الوظيفي</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="username" name="username" class="form-input pr-10" placeholder="مثال: 773" required>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">كلمة المرور</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="password" id="password" name="password" class="form-input pr-10" placeholder="******" required>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-slate-900 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-sign-in-alt"></i>
+                    دخول للنظام
+                </button>
+                <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
+                    <button type="button" onclick="exportComprehensiveMasterModel()" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 py-2.5 rounded-xl font-bold text-xs border border-emerald-200 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-file-excel text-sm text-emerald-600"></i>
+                        تحميل نموذج البيانات الشامل (Excel) مع دليل التعليمات
+                    </button>
+                </div>
+            </form>
+            <p class="mt-6 text-xs text-slate-400">جميع الحقوق محفوظة &copy; 2026</p>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app-container" class="hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar overflow-y-auto pb-10">
+            <div class="p-6 flex items-center gap-3 border-b border-indigo-800 mb-4">
+                <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center text-white shadow-lg">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <span class="font-bold text-xl tracking-tight">إدارة HR</span>
+            </div>
+
+            <nav class="flex-1">
+                <div class="nav-link hidden" data-page="achievements"><i class="fas fa-clipboard-check w-6"></i><span class="nav-text">تذاكر الإنجاز</span></div>
+                <div class="nav-link hidden" data-page="users"><i class="fas fa-user-shield w-6"></i><span class="nav-text">إدارة الصلاحيات</span></div>
+                <div class="nav-link" data-page="dashboard"><i class="fas fa-th-large w-6"></i><span class="nav-text">لوحة التحكم</span></div>
+                <div class="nav-link" data-page="employees"><i class="fas fa-users w-6"></i><span class="nav-text">إدارة الموظفين</span></div>
+                <div class="nav-link" data-page="branches"><i class="fas fa-building w-6"></i><span class="nav-text">إدارة الفروع</span></div>
+                <div class="nav-link" data-page="org-structure"><i class="fas fa-sitemap w-6"></i><span class="nav-text">الهيكل التنظيمي</span></div>
+                <div class="nav-link" data-page="jobs"><i class="fas fa-id-card w-6"></i><span class="nav-text">إدارة الوظائف</span></div>
+                <div class="nav-link" data-page="attendance"><i class="fas fa-clock w-6"></i><span class="nav-text">الحضور والانصراف</span></div>
+                <div class="nav-link" data-page="leave-requests"><i class="fas fa-calendar-alt w-6"></i><span class="nav-text">طلبات الإجازة</span></div>
+                <div class="nav-link" data-page="tasks"><i class="fas fa-tasks w-6"></i><span class="nav-text">المهام والإنجاز</span></div>
+                <div class="nav-link" data-page="evaluations"><i class="fas fa-star w-6"></i><span class="nav-text">التقييمات</span></div>
+                <div class="nav-link" data-page="penalties"><i class="fas fa-gavel w-6"></i><span class="nav-text">إدارة العقوبات</span></div>
+                <div class="nav-link" data-page="payroll"><i class="fas fa-money-bill-wave w-6"></i><span class="nav-text">الاستحقاقات والرواتب</span></div>
+                <div class="nav-link" data-page="reports"><i class="fas fa-file-invoice w-6"></i><span class="nav-text">التقارير</span></div>
+                <div class="nav-link" data-page="settings"><i class="fas fa-cog w-6"></i><span class="nav-text">الإعدادات</span></div>
+            </nav>
+
+            <div class="p-6 mt-auto">
+                <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-2 bg-indigo-800 rounded-lg text-indigo-200 hover:text-white hover:bg-indigo-700 transition-all">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>تسجيل الخروج</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200 bg-slate-50 sticky top-0 z-40">
+                <div class="flex items-center gap-4">
+                    <button id="toggle-sidebar" class="text-slate-500 hover:text-indigo-600 transition-colors"><i class="fas fa-bars text-xl"></i></button>
+                    <h2 id="page-title" class="text-2xl font-bold text-slate-800">لوحة التحكم</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="exportComprehensiveMasterModel()" class="hidden md:flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all" title="تصدير نموذج Excel شامل لكافة الخدمات مع دليل التعليمات والبيانات">
+                        <i class="fas fa-file-excel text-sm"></i>
+                        <span>تصدير نموذج Excel المتكامل</span>
+                    </button>
+                    <button onclick="seedAllServicesDataUI()" class="hidden lg:flex items-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition-all" title="شحن النظام ببيانات تجريبية لكافة الوظائف والخدمات">
+                        <i class="fas fa-database text-xs text-indigo-600"></i>
+                        <span>تغذية بيانات تجريبية</span>
+                    </button>
+                    <div id="notification-trigger" class="bg-white p-2.5 rounded-lg border border-slate-200 cursor-pointer hover:border-indigo-300 transition-all text-slate-500 hover:text-indigo-600 relative">
+                        <i class="fas fa-bell text-lg"></i>
+                        <span id="notification-badge" class="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white flex items-center justify-center hidden">0</span>
+                    </div>
+
+                    <!-- Notification Dropdown -->
+                    <div id="notification-dropdown" class="absolute top-14 left-0 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 hidden z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div class="p-4 border-b flex items-center justify-between bg-slate-50/50">
+                            <h3 class="text-sm font-bold text-slate-800">التنبيهات</h3>
+                            <div class="flex gap-2">
+                                <button onclick="markAllNotificationsRead()" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800">الكل مقروء</button>
+                                <span class="text-slate-300">|</span>
+                                <button onclick="openNotificationCenter()" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800">عرض الكل</button>
+                            </div>
+                        </div>
+                        <div id="notification-items" class="max-h-96 overflow-y-auto custom-scrollbar">
+                            <!-- Items auto-rendered -->
+                        </div>
+                        <div class="p-3 border-t bg-slate-50/30 text-center">
+                            <button onclick="clearAllNotifications()" class="text-[10px] font-bold text-slate-400 hover:text-red-500">مسح جميع التنبيهات</button>
+                        </div>
+                    </div>
+
+                    <div id="profile-btn" class="bg-white px-4 py-2 rounded-lg border border-slate-200 flex items-center gap-3 cursor-pointer hover:border-indigo-300 transition-all">
+                        <div class="text-left leading-tight hidden md:block">
+                            <p id="header-user-name" class="font-bold text-slate-800 text-sm">جاري التخصيص...</p>
+                            <p id="header-user-role" class="text-slate-500 text-xs text-right">-</p>
+                        </div>
+                        <img id="header-user-avatar" src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" class="w-8 h-8 rounded-full border-2 border-indigo-100" />
+                    </div>
+                </div>
+            </header>
+
+            <div id="content-pages">
+                <!-- Dashboard Section -->
+                <!-- Achievement Tickets Section (Mobile First) -->
+                <section id="page-achievements" class="page-section hidden space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-bold text-slate-800"><i class="fas fa-ticket-alt text-indigo-500 ml-2"></i>تذاكر الإنجاز والاعتمادات</h3>
+                        <div id="achievement-stats" class="flex gap-2">
+                            <span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold">معلقة: <span id="count-ach-pending">0</span></span>
+                            <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold">منجزة: <span id="count-ach-done">0</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Achievement Tabs -->
+                    <div class="flex items-center gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+                        <button onclick="setAchievementTab('all')" data-ach-tab="all" class="ach-tab-btn active px-6 py-2 rounded-lg text-xs font-bold transition-all">الكل</button>
+                        <button onclick="setAchievementTab('pending')" data-ach-tab="pending" class="ach-tab-btn px-6 py-2 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800">بانتظار الإنجاز</button>
+                        <button onclick="setAchievementTab('review')" data-ach-tab="review" class="ach-tab-btn px-6 py-2 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800">قيد المراجعة</button>
+                        <button onclick="setAchievementTab('approved')" data-ach-tab="approved" class="ach-tab-btn px-6 py-2 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800">معتمدة نهائياً</button>
+                    </div>
+
+                    <div id="achievements-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Tickets rendered here -->
+                    </div>
+                </section>
+
+                <!-- User Management Section -->
+                <section id="page-users" class="page-section hidden space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-lg font-bold text-slate-800"><i class="fas fa-user-shield text-indigo-500 ml-2"></i>إدارة المستخدمين والصلاحيات</h3>
+                        </div>
+                        <div class="flex items-center gap-2 w-full md:w-auto">
+                            <button id="add-user-btn" onclick="showAddUserModal()" class="btn-primary text-sm whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 border-none"><i class="fas fa-plus ml-1"></i> إضافة مستخدم</button>
+                            <div class="relative flex-grow md:flex-grow-0">
+                                <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input type="text" id="user-search" class="w-full md:w-64 pr-9 pl-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all" placeholder="بحث باسم المستخدم أو البريد...">
+                            </div>
+                            <button id="sync-users-btn" onclick="syncUsersFromEmployees()" class="btn-primary text-sm whitespace-nowrap"><i class="fas fa-sync ml-1"></i> مزامنة الحسابات</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100">
+                                    <th class="p-4 text-xs font-bold text-slate-500">المستخدم</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500">رقم الهاتف</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500">الصلاحية</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500">الحالة</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Users rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Leave Requests Section -->
+                <section id="page-leave-requests" class="page-section hidden space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800"><i class="fas fa-calendar-alt text-indigo-500 ml-2"></i>طلبات الإجازة</h3>
+                            <p class="text-xs text-slate-500 mt-1">تتبع وإدارة طلبات الإجازات والغياب للموظفين</p>
+                        </div>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <button id="add-leave-request-btn" onclick="showLeaveRequestModal()" class="btn-primary flex-1 md:flex-none">
+                                <i class="fas fa-plus ml-1"></i> طلب إجازة جديد
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-clock"></i></div>
+                            <div>
+                                <p class="text-xs text-slate-500 font-bold">بانتظار الموافقة</p>
+                                <h3 id="stat-pending-leaves" class="text-2xl font-black text-slate-800">0</h3>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <p class="text-xs text-slate-500 font-bold">تمت الموافقة</p>
+                                <h3 id="stat-approved-leaves" class="text-2xl font-black text-slate-800">0</h3>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-calendar-day"></i></div>
+                            <div>
+                                <p class="text-xs text-slate-500 font-bold">إجازات اليوم</p>
+                                <h3 id="stat-today-leaves" class="text-2xl font-black text-slate-800">0</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right border-collapse">
+                                <thead class="bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider">
+                                    <tr>
+                                        <th class="p-4 border-b text-right">الموظف</th>
+                                        <th class="p-4 border-b text-right">نوع الإجازة</th>
+                                        <th class="p-4 border-b text-right">الفترة</th>
+                                        <th class="p-4 border-b text-right">الحالة</th>
+                                        <th class="p-4 border-b text-center">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaves-table-body" class="divide-y divide-slate-100">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="page-dashboard" class="page-section space-y-6">
+                    <!-- Featured Master Excel & Data Seeding Hero Banner -->
+                    <div class="bg-gradient-to-l from-indigo-900 via-indigo-800 to-indigo-950 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 border border-indigo-700/50">
+                        <div class="space-y-2 z-10 max-w-2xl">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-bold text-indigo-100 backdrop-blur-sm border border-white/15">
+                                <i class="fas fa-file-excel text-emerald-400"></i>
+                                النموذج المتكامل المعتمد (13 ورقة عمل)
+                            </div>
+                            <h2 class="text-xl md:text-2xl font-black">نموذج بيانات النظام الشامل (Excel Master Model)</h2>
+                            <p class="text-xs md:text-sm text-indigo-100/90 leading-relaxed">
+                                يتضمن المصنف دليلاً تفصيلياً لكافة قواعد العمل والاحتساب (الرواتب، التقييم، المهام، الحضور، الإجازات) مع بيانات تجريبية جاهزة ومطابقة لكافة الوظائف والخدمات التي ينفذها التطبيق.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3 z-10 w-full lg:w-auto">
+                            <button onclick="exportComprehensiveMasterModel()" class="flex-1 lg:flex-none px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs md:text-sm shadow-lg shadow-emerald-950/30 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fas fa-file-excel text-base"></i>
+                                تصدير نموذج Excel المتكامل
+                            </button>
+                            <button onclick="seedAllServicesDataUI()" class="flex-1 lg:flex-none px-5 py-3 bg-white hover:bg-indigo-50 text-indigo-900 font-bold rounded-xl text-xs md:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fas fa-magic text-indigo-600"></i>
+                                تغذية بيانات تجريبية لكافة الخدمات
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4">
+                        <h2 class="text-xl font-bold text-slate-800">مؤشرات الأداء العامة</h2>
+                        <button id="sync-all-data-btn" onclick="syncAllData()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-slate-800 transition-all flex items-center gap-2">
+                            <i class="fas fa-sync-alt"></i>
+                            مزامنة شاملة للبيانات
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="stat-card"><div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center ml-4 text-xl"><i class="fas fa-users"></i></div><div><p class="text-slate-500 text-sm">إجمالي الموظفين</p><h3 id="stat-total-employees" class="text-2xl font-bold">0</h3></div></div>
+                        <div class="stat-card" style="border-right-color: #10b981;"><div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center ml-4 text-xl"><i class="fas fa-user-check"></i></div><div><p class="text-slate-500 text-sm">الحضور اليوم</p><h3 id="stat-today-attendance" class="text-2xl font-bold">0%</h3></div></div>
+                        <div class="stat-card" style="border-right-color: #f59e0b;"><div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center ml-4 text-xl"><i class="fas fa-chart-line"></i></div><div><p class="text-slate-500 text-sm">متوسط الأداء</p><h3 id="stat-avg-performance" class="text-2xl font-bold">0%</h3></div></div>
+                        <div class="stat-card" style="border-right-color: #ef4444;"><div class="w-12 h-12 bg-red-100 text-red-600 rounded-lg flex items-center justify-center ml-4 text-xl"><i class="fas fa-hourglass-half"></i></div><div><p class="text-slate-500 text-sm">المهام المعلقة</p><h3 id="stat-pending-tasks" class="text-2xl font-bold">0</h3></div></div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 card">
+                            <div class="flex items-center justify-between mb-6"><h3 class="font-bold text-lg">إحصائيات الحضور الأسبوعية</h3><select id="chart-period" class="p-1 border border-slate-200 rounded text-sm bg-slate-50"><option value="week" selected>هذا الأسبوع</option></select></div>
+                            <div class="h-64"><canvas id="attendance-chart"></canvas></div>
+                        </div>
+                        <div class="card"><h3 class="font-bold text-lg mb-6">أفضل 5 موظفين أداءً</h3><div id="top-employees-list" class="space-y-4"></div></div>
+                    </div>
+                </section>
+
+                <!-- Management Sections -->
+                <section id="page-employees" class="page-section hidden space-y-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <button id="add-employee-btn" class="btn-primary"><i class="fas fa-plus"></i> إضافة موظف</button>
+                            <button class="btn-secondary gen-report" data-type="employees" data-format="excel"><i class="fas fa-file-excel"></i> تصدير</button>
+                            <button id="import-employees-btn" class="btn-secondary"><i class="fas fa-file-import"></i> استيراد</button>
+                            <button onclick="renderEmployees()" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-400 transition-all">
+                            <i class="fas fa-search text-slate-400"></i>
+                            <input type="text" id="employee-search" class="outline-none w-64 bg-transparent text-sm font-medium" placeholder="بحث باسم أو رقم الموظف...">
+                        </div>
+                    </div>
+                    <div class="card p-0"><table class="w-full text-right"><thead class="bg-slate-50 border-b"><tr><th class="p-4 text-sm font-bold">الموظف</th><th class="p-4 text-sm font-bold">المنصب</th><th class="p-4 text-sm font-bold">الإدارة والفرع</th><th class="p-4 text-sm font-bold">الأداء</th><th class="p-4 text-sm font-bold">الحالة</th><th class="p-4 text-sm font-bold">الإجراءات</th></tr></thead><tbody id="employees-table-body" class="divide-y"></tbody></table></div>
+                </section>
+
+                <section id="page-branches" class="page-section hidden space-y-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                             <button id="add-branch-btn" class="btn-primary"><i class="fas fa-plus"></i> إضافة فرع</button>
+                             <button class="btn-secondary gen-report" data-type="branches" data-format="excel"><i class="fas fa-file-excel"></i> تصدير</button>
+                             <button id="import-branches-btn" class="btn-secondary"><i class="fas fa-file-import"></i> استيراد</button>
+                             <button onclick="renderBranches()" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-400 transition-all">
+                            <i class="fas fa-search text-slate-400"></i>
+                            <input type="text" id="branch-search" class="outline-none w-64 bg-transparent text-sm font-medium" placeholder="بحث باسم الفرع...">
+                        </div>
+                    </div>
+                    <div class="card p-0"><table class="w-full text-right"><thead class="bg-slate-50 border-b"><tr><th class="p-4 font-bold">الفرع</th><th class="p-4 font-bold">مركز التكلفة</th><th class="p-4 font-bold">النوع</th><th class="p-4 font-bold">الإجراءات</th></tr></thead><tbody id="branches-table-body" class="divide-y"></tbody></table></div>
+                </section>
+
+                <section id="page-org-structure" class="page-section hidden space-y-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                             <button id="add-unit-btn" class="btn-primary"><i class="fas fa-plus"></i> إضافة قسم/وحدة</button>
+                             <button onclick="renderOrgStructure()" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <aside class="w-full md:w-64 space-y-4">
+                            <div class="card space-y-4"><h4 class="font-bold border-b pb-2">طرق العرض</h4><div class="space-y-2"><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="org-view" value="tree" checked> <span>هرمي</span></label><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="org-view" value="cards"> <span>بطاقات</span></label></div></div>
+                        </aside>
+                        <div class="flex-1 card relative overflow-auto min-h-[600px] bg-slate-50 border-dashed border-2 border-slate-200" id="org-canvas"><div id="org-tree-container" class="absolute inset-0 p-10 flex justify-center origin-top"></div></div>
+                    </div>
+                </section>
+
+                <section id="page-jobs" class="page-section hidden space-y-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                             <button id="add-job-btn" class="btn-primary"><i class="fas fa-plus"></i> إضافة وظيفة</button>
+                             <button class="btn-secondary gen-report" data-type="positions" data-format="excel"><i class="fas fa-file-excel"></i> تصدير</button>
+                             <button onclick="renderJobs()" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-400 transition-all">
+                            <i class="fas fa-search text-slate-400"></i>
+                            <input type="text" id="job-search" class="outline-none w-64 bg-transparent text-sm font-medium" placeholder="بحث في المسميات الوظيفية...">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="jobs-grid"></div>
+                </section>
+
+                <section id="page-attendance" class="page-section hidden space-y-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                             <button id="register-attendance-btn" class="btn-primary"><i class="fas fa-plus"></i> بصمة يدوي</button>
+                             <button class="btn-secondary gen-report" data-type="attendance" data-format="excel"><i class="fas fa-file-excel"></i> تصدير</button>
+                             <button id="import-bio-btn" class="btn-secondary"><i class="fas fa-file-import"></i> استيراد</button>
+                             <button id="clear-attendance-btn" class="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100"><i class="fas fa-trash-alt ml-1"></i> مسح السجلات</button>
+                             <button onclick="renderAttendance()" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                             <div class="relative">
+                                <i class="fas fa-calendar absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="date" id="attendance-filter-date" class="form-input w-40 pr-10">
+                             </div>
+                             <div class="relative">
+                                <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="attendance-search" class="form-input w-48 pr-10" placeholder="بحث...">
+                             </div>
+                        </div>
+                    </div>
+                    <div class="card p-0"><table class="w-full text-right"><thead class="bg-slate-50 border-b"><tr><th class="p-3 text-sm">الموظف</th><th class="p-3 text-sm">التاريخ</th><th class="p-3 text-sm">الدخول</th><th class="p-3 text-sm">الخروج</th><th class="p-3 text-sm">الحالة</th><th class="p-3 text-sm">الإجراءات</th></tr></thead><tbody id="attendance-table-body" class="divide-y"></tbody></table></div>
+                </section>
+
+                <section id="page-tasks" class="page-section hidden space-y-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <button id="add-task-btn" class="btn-primary"><i class="fas fa-plus"></i> إضافة مهمة</button>
+                            <button class="btn-secondary gen-report" data-type="tasks" data-format="excel"><i class="fas fa-file-excel"></i> تصدير</button>
+                            <button id="import-tasks-btn" class="btn-secondary"><i class="fas fa-file-import"></i> استيراد</button>
+                            <button onclick="renderTasks()" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-400 transition-all">
+                                <i class="fas fa-search text-slate-400"></i>
+                                <input type="text" id="task-search" class="outline-none w-64 bg-transparent text-sm font-medium" placeholder="بحث في المهام...">
+                            </div>
+                            <div class="flex items-center gap-4 bg-white p-2 rounded-lg border border-slate-200">
+                                <div class="flex gap-4">
+                                    <div class="text-xs font-bold text-slate-500">انتظار: <span id="count-pending" class="text-indigo-600">0</span></div>
+                                    <div class="text-xs font-bold text-slate-500">تنفيذ: <span id="count-doing" class="text-amber-600">0</span></div>
+                                    <div class="text-xs font-bold text-slate-500">مكتمل: <span id="count-done" class="text-emerald-600">0</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="kanban-board">
+                        <div class="flex flex-col gap-4"><h3><i class="fas fa-clock text-indigo-400"></i> انتظار</h3><div class="kanban-column" id="tasks-todo" data-status="pending"></div></div>
+                        <div class="flex flex-col gap-4"><h3><i class="fas fa-spinner text-amber-400"></i> تنفيذ</h3><div class="kanban-column" id="tasks-doing" data-status="in-progress"></div></div>
+                        <div class="flex flex-col gap-4"><h3><i class="fas fa-check-circle text-emerald-400"></i> مكتملة</h3><div class="kanban-column" id="tasks-done" data-status="completed"></div></div>
+                    </div>
+                </section>
+
+                <section id="page-evaluations" class="page-section hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div class="flex gap-2">
+                            <button id="new-evaluation-btn" class="btn-primary"><i class="fas fa-plus-circle ml-1"></i> تقييم جديد</button>
+                            <button id="auto-eval-btn" class="btn-secondary bg-purple-600 text-white border-none hover:bg-purple-700"><i class="fas fa-robot ml-1"></i> تقييم آلي</button>
+                            <button class="btn-secondary gen-report" data-type="evaluations" data-format="excel"><i class="fas fa-file-excel"></i> تصدير</button>
+                            <button onclick="renderEvaluations()" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-400 transition-all">
+                            <i class="fas fa-search text-slate-400"></i>
+                            <input type="text" id="eval-search" class="outline-none w-64 bg-transparent text-sm font-medium" placeholder="بحث في التقييمات...">
+                        </div>
+                    </div>
+                    <div class="card p-0"><table class="w-full text-right"><thead class="bg-slate-50 border-b"><tr><th class="p-4 font-bold">الموظف</th><th class="p-4 font-bold">التاريخ</th><th class="p-4 font-bold">الدرجة النهائية</th><th class="p-4 font-bold">الحالة</th><th class="p-4 font-bold">إجراء</th></tr></thead><tbody id="evaluations-table-body" class="divide-y"></tbody></table></div>
+                </section>
+
+                <section id="page-penalties" class="page-section hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div class="flex gap-2">
+                             <button id="add-penalty-btn" class="btn-primary"><i class="fas fa-gavel ml-1"></i> تسجيل عقوبة</button>
+                             <button class="btn-secondary gen-report" data-type="penalties" data-format="excel"><i class="fas fa-file-excel"></i> تصدير</button>
+                             <button onclick="renderPenalties()" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-400 transition-all">
+                            <i class="fas fa-search text-slate-400"></i>
+                            <input type="text" id="penalty-search" class="outline-none w-64 bg-transparent text-sm font-medium" placeholder="بحث في العقوبات والجزاءات...">
+                        </div>
+                    </div>
+                    <div class="card p-0"><table class="w-full text-right"><thead class="bg-slate-50 border-b"><tr><th class="p-4 font-bold">الموظف</th><th class="p-4 font-bold">النوع</th><th class="p-4 font-bold">السبب</th><th class="p-4 font-bold">التاريخ</th><th class="p-4 font-bold">إجراء</th></tr></thead><tbody id="penalties-table-body" class="divide-y"></tbody></table></div>
+                </section>
+
+                <section id="page-payroll" class="page-section hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="card p-4 border-r-4 border-indigo-500">
+                            <p class="text-xs text-slate-500">إجمالي الرواتب</p>
+                            <h4 id="pay-total-salaries" class="text-lg font-bold">0 ر.س</h4>
+                        </div>
+                        <div class="card p-4 border-r-4 border-emerald-500">
+                            <p class="text-xs text-slate-500">إجمالي الحوافز</p>
+                            <h4 id="pay-total-bonus" class="text-lg font-bold">0 ر.س</h4>
+                        </div>
+                        <div class="card p-4 border-r-4 border-red-500">
+                            <p class="text-xs text-slate-500">إجمالي الخصومات</p>
+                            <h4 id="pay-total-deductions" class="text-lg font-bold">0 ر.س</h4>
+                        </div>
+                        <div class="card p-4 border-r-4 border-accent">
+                            <p class="text-xs text-slate-500">صافي المستحق</p>
+                            <h4 id="pay-net-total" class="text-lg font-bold">0 ر.س</h4>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex gap-2">
+                            <button id="add-accrual-btn" class="btn-primary"><i class="fas fa-user-plus ml-1"></i> استحقاق فردي</button>
+                            <button id="bulk-accrual-btn" class="btn-secondary"><i class="fas fa-users ml-1"></i> إضافة جماعية</button>
+                            <button onclick="renderPayroll()" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-400 transition-all">
+                            <i class="fas fa-search text-slate-400"></i>
+                            <input type="text" id="accrual-search" class="outline-none w-64 bg-transparent text-sm font-medium" placeholder="بحث باسم الموظف في المسير...">
+                        </div>
+                    </div>
+                        <button class="btn-secondary gen-report" data-type="accruals" data-format="excel"><i class="fas fa-file-excel"></i> تصدير المسير</button>
+                    </div>
+                </section>
+
+                <section id="page-reports" class="page-section hidden space-y-6">
+                    <!-- Master Excel Workbook Featured Card -->
+                    <div class="card p-6 bg-gradient-to-r from-emerald-50 via-teal-50 to-slate-50 border border-emerald-200/80 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-emerald-600 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-emerald-600/20">
+                                <i class="fas fa-file-excel"></i>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-bold">
+                                    <i class="fas fa-star text-amber-500"></i> المصنف الشامل لكافة خدمات النظام
+                                </div>
+                                <h3 class="text-base md:text-lg font-bold text-slate-800">تصدير نموذج Excel المتكامل (مع دليل التعليمات والبيانات)</h3>
+                                <p class="text-xs text-slate-600 max-w-2xl leading-relaxed">
+                                    يحتوي هذا المصنف على 13 ورقة عمل تفصيلية: دليل الإرشادات وقواعد العمل، الموظفون، الفروع، الهيكل التنظيمي، الوظائف، الحضور، الإجازات، المهام والتذاكر، التقييمات، الجزاءات، مسير الرواتب، المستخدمين، وبيانات المنشأة.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                            <button onclick="exportComprehensiveMasterModel()" class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs md:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fas fa-download"></i>
+                                تحميل النموذج الكامل (.xlsx)
+                            </button>
+                            <button onclick="seedAllServicesDataUI()" class="px-4 py-3 bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-200 rounded-xl text-xs md:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fas fa-magic text-indigo-600"></i>
+                                تغذية بيانات تجريبية
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card p-6 space-y-4">
+                        <h3 class="font-bold text-slate-800 border-b pb-3"><i class="fas fa-filter ml-2"></i> خيارات الفلترة المتقدمة</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">من تاريخ</label>
+                                <input type="date" id="report-start-date" class="form-input">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">إلى تاريخ</label>
+                                <input type="date" id="report-end-date" class="form-input">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">بحث عام (موظف، فرع، حالة)</label>
+                                <input type="text" id="report-search" class="form-input" placeholder="اكتب للبحث...">
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="updateReportPreview()" class="btn-secondary w-full py-2.5 flex items-center justify-center gap-2">
+                                    <i class="fas fa-search"></i>
+                                    تحديث المعاينة
+                                </button>
+                            </div>
+                        </div>
+                        <div id="report-filter-summary" class="hidden p-3 bg-indigo-50 rounded-lg border border-indigo-100 text-xs text-indigo-700 font-medium">
+                            <!-- Filter summary will be shown here -->
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="reports-grid"></div>
+                </section>
+
+                <section id="page-settings" class="page-section hidden space-y-6">
+                    <div class="flex border-b mb-6 overflow-x-auto"><button class="px-4 py-3 border-b-2 border-indigo-600 text-indigo-600 settings-tab-btn whitespace-nowrap" data-tab="general">عام</button><button class="px-4 py-3 text-slate-500 settings-tab-btn whitespace-nowrap" data-tab="company">بيانات الشركة</button><button class="px-4 py-3 text-slate-500 settings-tab-btn whitespace-nowrap" data-tab="eval-rules">أوزان التقييم</button><button class="px-4 py-3 text-slate-500 settings-tab-btn whitespace-nowrap" data-tab="db-backup">النسخ الاحتياطي</button><button class="px-4 py-3 text-slate-500 settings-tab-btn whitespace-nowrap" data-tab="logs">سجل العمليات</button></div>
+                    <div id="settings-tab-content">
+                        <div id="tab-general" class="tab-pane animate-fade-in">
+                            <div class="card space-y-4 max-w-2xl">
+                                <h3 class="font-bold">الإعدادات العامة</h3>
+                                <div class="space-y-4">
+                                    <div><label class="block text-sm mb-1">اسم النظام</label><input type="text" class="form-input" value="مركز إدارة الموارد البشرية"></div>
+                                    <div><label class="block text-sm mb-1">اللغة الافتراضية</label><select class="form-input"><option>العربية</option></select></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-company" class="tab-pane hidden animate-fade-in">
+                           <div class="card space-y-4 max-w-2xl">
+                                <h3 class="font-bold border-b pb-2">بيانات المؤسسة والهوية البصرية</h3>
+                                <form id="company-settings-form" class="space-y-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="col-span-full">
+                                            <label class="block text-sm font-bold mb-1">شعار المؤسسة</label>
+                                            <div class="flex items-center gap-4">
+                                                <div id="company-logo-preview" class="w-20 h-20 bg-slate-100 rounded border flex items-center justify-center text-slate-400 overflow-hidden">
+                                                    <i class="fas fa-image text-2xl"></i>
+                                                </div>
+                                                <input type="file" id="company-logo-input" accept="image/*" class="text-xs">
+                                                <input type="hidden" name="logo" id="company-logo-base64">
+                                            </div>
+                                        </div>
+                                        <div class="col-span-full"><label class="block text-sm font-bold mb-1">اسم المؤسسة</label><input type="text" name="companyName" class="form-input" placeholder="اسم المنشأة" required></div>
+                                        <div><label class="block text-sm font-bold mb-1">البريد الإلكتروني الرسمي</label><input type="email" name="email" class="form-input" placeholder="info@company.com"></div>
+                                        <div><label class="block text-sm font-bold mb-1">الهاتف / الجوال</label><input type="text" name="phone" class="form-input"></div>
+                                        <div><label class="block text-sm font-bold mb-1">السجل التجاري</label><input type="text" name="crNumber" class="form-input"></div>
+                                        <div><label class="block text-sm font-bold mb-1">الموقع الإلكتروني</label><input type="text" name="website" class="form-input"></div>
+                                        <div class="col-span-full">
+                                            <label class="block text-sm font-bold mb-1">نص الترويسة (Header Text)</label>
+                                            <textarea name="headerText" class="form-input h-20" placeholder="يظهر في أعلى التقارير..."></textarea>
+                                        </div>
+                                        <div class="col-span-full">
+                                            <label class="block text-sm font-bold mb-1">نص التذييل (Footer Text)</label>
+                                            <textarea name="footerText" class="form-input h-20" placeholder="يظهر في أسفل التقارير..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="pt-4 border-t">
+                                        <button type="submit" class="btn-primary w-full py-3 flex items-center justify-center gap-2">
+                                            <i class="fas fa-save"></i>
+                                            حفظ بيانات المؤسسة
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div id="tab-eval-rules" class="tab-pane hidden animate-fade-in">
+                           <div class="card space-y-4 max-w-2xl">
+                                <h3 class="font-bold">توزيع أوزان التقييم (%)</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between"><span>نسبة الحضور</span><input type="number" class="form-input w-24" value="30"></div>
+                                    <div class="flex items-center justify-between"><span>إنجاز المهام</span><input type="number" class="form-input w-24" value="50"></div>
+                                    <div class="flex items-center justify-between"><span>السلوك والانضباط</span><input type="number" class="form-input w-24" value="20"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-db-backup" class="tab-pane hidden animate-fade-in">
+                           <div class="card space-y-6 max-w-2xl text-center py-8">
+                                <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-sm"><i class="fas fa-database"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-slate-800">إدارة وتصدير البيانات والنسخ الاحتياطي</h3>
+                                    <p class="text-xs text-slate-500 mt-1">تصدير المصنف الكامل (Excel)، النسخ الاحتياطي السحابي (JSON)، وتغذية البيانات التجريبية</p>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
+                                    <button class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm" onclick="exportComprehensiveMasterModel()">
+                                        <i class="fas fa-file-excel text-base"></i>
+                                        تصدير نموذج Excel الشامل
+                                    </button>
+                                    <button class="px-4 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2" onclick="seedAllServicesDataUI()">
+                                        <i class="fas fa-magic text-base"></i>
+                                        تغذية بيانات تجريبية لكافة الخدمات
+                                    </button>
+                                    <button class="px-4 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm" id="export-db-btn">
+                                        <i class="fas fa-download"></i>
+                                        تصدير نسخة JSON
+                                    </button>
+                                    <button class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2" id="import-db-btn">
+                                        <i class="fas fa-upload"></i>
+                                        استيراد نسخة JSON
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-logs" class="tab-pane hidden animate-fade-in">
+                            <div class="card p-0 overflow-hidden">
+                                <div class="p-4 border-b bg-slate-50 flex justify-between items-center">
+                                    <h3 class="font-bold text-slate-800"><i class="fas fa-history ml-2 opacity-50"></i>سجل العمليات الأخيرة</h3>
+                                    <button onclick="renderLogs()" class="text-indigo-600 hover:text-indigo-800 text-sm font-bold"><i class="fas fa-sync ml-1"></i>تحديث</button>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-right divide-y divide-slate-100">
+                                        <thead class="bg-slate-50">
+                                            <tr>
+                                                <th class="p-4 text-xs font-bold text-slate-500">العملية</th>
+                                                <th class="p-4 text-xs font-bold text-slate-500">التفاصيل</th>
+                                                <th class="p-4 text-xs font-bold text-slate-500">المستخدم</th>
+                                                <th class="p-4 text-xs font-bold text-slate-500">الوقت</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="logs-table-body" class="bg-white">
+                                            <tr><td colspan="4" class="p-10 text-center text-slate-400">جاري التحميل...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="page-profile" class="page-section hidden space-y-6">
+                    <div class="max-w-4xl mx-auto space-y-6">
+                        <div class="card p-8 text-center space-y-4">
+                            <div class="relative inline-block">
+                                <img id="profile-full-avatar" src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=256" class="w-32 h-32 rounded-full border-4 border-indigo-100 shadow-xl mx-auto">
+                            </div>
+                            <div>
+                                <h3 id="profile-full-name" class="text-2xl font-bold text-slate-800">اسم المستخدم</h3>
+                                <p id="profile-full-role" class="text-indigo-600 font-medium">الوظيفة / الدور</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="card p-6 space-y-4">
+                                <h4 class="font-bold border-b pb-2 flex items-center gap-2"><i class="fas fa-info-circle text-indigo-500"></i> المعلومات الشخصية</h4>
+                                <form id="profile-info-form" class="space-y-3">
+                                    <div><label class="block text-xs font-bold mb-1">البريد الإلكتروني</label><input type="email" id="profile-email" class="form-input bg-slate-50" readonly></div>
+                                    <div><label class="block text-xs font-bold mb-1">الاسم بالكامل</label><input type="text" name="name" id="profile-name" class="form-input"></div>
+                                    <div><label class="block text-xs font-bold mb-1">رقم الجوال</label><input type="text" name="phone" id="profile-phone" class="form-input"></div>
+                                    <button type="submit" class="btn-primary w-full py-3 mt-4">حفظ التغييرات</button>
+                                </form>
+                            </div>
+
+                            <div class="card p-6 space-y-4">
+                                <h4 class="font-bold border-b pb-2 flex items-center gap-2"><i class="fas fa-key text-indigo-500"></i> أمان الحساب</h4>
+                                <form id="change-password-form" class="space-y-3">
+                                    <div><label class="block text-xs font-bold mb-1">كلمة المرور الجديدة</label><input type="password" name="newPassword" id="new-password" class="form-input" required minlength="6"></div>
+                                    <div><label class="block text-xs font-bold mb-1">تأكيد كلمة المرور</label><input type="password" name="confirmPassword" id="confirm-password" class="form-input" required minlength="6"></div>
+                                    <button type="submit" class="btn-secondary w-full py-3 mt-4">تحديث كلمة المرور</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div id="modal-backdrop" class="modal-overlay">
+        <div id="modal-container" class="modal-content"></div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-6 left-6 z-[300] flex flex-col gap-2"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="/src/app.js"></script>
+</body>
+</html>
